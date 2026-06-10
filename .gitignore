@@ -1,0 +1,43 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# ---- Model artifacts & data ----
+# Regenerable from Kaggle; too large/binary for git. The service expects them
+# in inference-service/app/artifacts/ at runtime, not in version control.
+inference-service/app/artifacts/*
+!inference-service/app/artifacts/.gitkeep
+*.npy
+*.pkl
+*.pt
+*.lgb
+*.ubj
+
+# ---- MLflow local tracking ----
+mlflow/
+mlruns/
+
+# ---- Secrets & IaC state (NEVER commit) ----
+.env
+*.env
+secrets.*
+kaggle.json
+*.token
+azure-credentials*.json
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+
+# ---- OS / editor ----
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# keep the artifacts dir tracked but empty
+!**/.gitkeep

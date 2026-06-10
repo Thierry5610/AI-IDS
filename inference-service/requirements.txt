@@ -1,0 +1,18 @@
+# Pinned to match the Kaggle training environment so the pickled / saved models
+# load faithfully. Do not bump xgboost/sklearn/lightgbm/numpy without re-checking
+# that the saved artifacts still load correctly.
+scikit-learn==1.6.1
+xgboost==3.2.0
+lightgbm==4.6.0
+numpy==2.4.6
+shap==0.52.0          # 0.52 parses xgboost 3.x multiclass models (earlier shap fails)
+
+# torch: default wheel bundles CUDA (~1.5GB). On the CPU-only laptop, install the
+# CPU build instead to save space and RAM:
+#   pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
+torch==2.10.0
+
+# Service layer
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
