@@ -1,49 +1,49 @@
 """Central configuration. Single authoritative source for paths and constants.
 
-Anything that the rest of the service treats as fixed (feature count, class
-count, artifact filenames, the autoencoder threshold) lives here so there is
-exactly one place to change it.
+Filenames and formats below match exactly what the Kaggle phase-1 notebook
+writes to /kaggle/working/processed/. Do not rename without changing the
+notebook's save cells too.
 """
 import os
 from pathlib import Path
 
-# Directory holding the artifacts exported from the Kaggle pipeline.
 ARTIFACT_DIR = Path(os.getenv("ARTIFACT_DIR", "app/artifacts"))
 
-# Shape contract. Both come straight from the training pipeline.
 NUM_FEATURES = 56
 NUM_CLASSES = 15
 
-# Label for benign traffic in the trained label encoder. Anything else = attack.
-BENIGN_LABEL = "BENIGN"
+# Benign class string in the label encoder (confirmed from le.classes_, index 0).
+# Detection is case-insensitive (see main.is_benign).
+BENIGN_LABEL = "Benign"
 
 # Autoencoder anomaly threshold: 95th percentile of benign reconstruction error.
 AE_THRESHOLD = 0.0726
 
-# Model artifact filenames expected inside ARTIFACT_DIR.
+# Model artifacts, each with the loader its format requires (see registry.py):
+#   rf_model.pkl        -> pickle
+#   xgb_model.json      -> XGBClassifier().load_model()
+#   lgb_model.txt       -> lgb.Booster(model_file=...)   (booster, not wrapper)
+#   *_model.pt          -> torch state_dict
 ARTIFACTS = {
-    "random_forest": "random_forest.pkl",
-    "xgboost": "xgboost.pkl",
-    "lightgbm": "lightgbm.pkl",
-    "cnn_lstm": "cnn_lstm.pt",       # state_dict
-    "autoencoder": "autoencoder.pt",  # state_dict
+    "random_forest": "rf_model.pkl",
+    "xgboost": "xgb_model.json",
+    "lightgbm": "lgb_model.txt",
+    "cnn_lstm": "cnn_lstm_model.pt",
+    "autoencoder": "autoencoder_model.pt",
 }
 
-# Supporting artifacts.
 LABEL_ENCODER_FILE = "label_encoder.pkl"
-FEATURE_COLUMNS_FILE = "feature_columns.json"   # ordered list of the 56 features
-AE_SCALER_FILE = "ae_scaler.pkl"                # scaler used for the autoencoder
+FEATURE_COLUMNS_FILE = "feature_cols_clean.pkl"   # pickled python list, 56 names
+AE_SCALER_FILE = "ae_scaler.pkl"                  # StandardScaler (benign-fit)
 
-# Scaler applied to neural-net inputs (CNN-LSTM). OPEN QUESTION: confirm which
-# scaler the CNN-LSTM was trained with. If it was trained on scaled features and
-# this is absent, its predictions will be wrong. See README.
+# NOT used: the CNN-LSTM trained on raw features (Cell 23 reshapes X_train_clean
+# directly, no scaler). Kept optional only so a future retrain on scaled input
+# can be supported without code change. Leave this file absent.
 DL_SCALER_FILE = "dl_scaler.pkl"
 
-# Model groupings.
 TREE_MODELS = ["random_forest", "xgboost", "lightgbm"]
 SUPERVISED_MODELS = ["random_forest", "xgboost", "lightgbm", "cnn_lstm"]
 
-# SHAP / explainability.
 SHAP_TOP_K = 10
-COMPUTE_SHAP_ON_BENIGN = False              # explain alerts only (CPU budget)
-SHAP_BACKGROUND_FILE = "shap_background.npy"  # optional, for future neural SHAP
+COMPUTE_SHAP_ON_BENIGN = False
+SHAP_BACKGROUND_FILE = "shap_background.npy"

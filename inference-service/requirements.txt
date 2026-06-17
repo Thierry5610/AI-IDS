@@ -7,10 +7,8 @@ lightgbm==4.6.0
 numpy==2.4.6
 shap==0.52.0          # 0.52 parses xgboost 3.x multiclass models (earlier shap fails)
 
-# torch: default wheel bundles CUDA (~1.5GB). On the CPU-only laptop, install the
-# CPU build instead to save space and RAM:
-#   pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
-torch==2.10.0
+torch==2.10.0+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
 
 # Service layer
 fastapi==0.115.0
