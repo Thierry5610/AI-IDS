@@ -1,7 +1,7 @@
 dpkt==1.9.8
 
 # Added in later stages (uncomment when wired):
-# redis==5.2.1     # emit flow records to Redis Streams (stage 4)
+redis==8.0.0          # alert fan-out to Redis Streams (stage 4b)
 # httpx==0.28.1    # POST feature vectors to inference-service /predict (stage 4)
 #
 # eBPF capture is NOT pip-installed — it needs system packages (see README):
