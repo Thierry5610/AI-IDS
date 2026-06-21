@@ -26,9 +26,10 @@ def _flow_id(identity: dict) -> str:
 
 
 class PredictEmitter:
-    def __init__(self, url="http://127.0.0.1:8000/predict", maxsize=2000, timeout=3.0):
+    def __init__(self, url="http://127.0.0.1:8000/predict", maxsize=2000, timeout=3.0, publisher=None):
         self.url = url
         self.timeout = timeout
+        self.publisher = publisher
         self.q: queue.Queue = queue.Queue(maxsize=maxsize)
         self.stats = {"sent": 0, "attacks": 0, "anomalies": 0,
                       "benign": 0, "dropped": 0, "errors": 0}
@@ -101,10 +102,14 @@ class PredictEmitter:
             print(f"ALERT    {str(pred.get('label')):22} conf={pred.get('confidence', 0):.2f}  "
                   f"src={resp.get('source_model')}  "
                   f"agree={agr.get('agreeing')}/{agr.get('total')}{who}")
+            if self.publisher:
+                self.publisher.publish_attack({**resp, "identity": identity})
         elif ae.get("is_anomalous"):
             # supervised models say benign, autoencoder disagrees -> possible zero-day
             self.stats["anomalies"] += 1
             print(f"ANOMALY  (autoencoder)         score={ae.get('anomaly_score', 0):.4f}  "
                   f"thr={ae.get('threshold')}{who}")
+            if self.publisher:
+                self.publisher.publish_anomaly({**resp, "identity": identity})
         else:
             self.stats["benign"] += 1

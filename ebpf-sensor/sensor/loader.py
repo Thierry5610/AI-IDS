@@ -21,6 +21,7 @@ from bcc import BPF
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sensor.flow_features import PacketMeta, FlowManager
 from sensor.emitter import PredictEmitter
+from sensor.publisher import Publisher
 
 SWEEP_EVERY_S = 2.0
 HEARTBEAT_EVERY_S = 10.0
@@ -33,7 +34,12 @@ def main(iface: str) -> None:
     fn = b.load_func("capture", BPF.SOCKET_FILTER)
     BPF.attach_raw_socket(fn, iface)
 
-    emitter = PredictEmitter(url=INFERENCE_URL)
+    publisher = Publisher()
+    if publisher.enabled:
+        print(f"redis: -> {publisher.attacks_stream} (attacks) | {publisher.anomalies_stream} (anomalies)")
+    else:
+        print(f"redis: DISABLED ({publisher.disabled_reason}) -- alerts print only, capture unaffected")
+    emitter = PredictEmitter(url=INFERENCE_URL, publisher=publisher)
     emitter.start()
 
     pkts = {"n": 0}
@@ -70,10 +76,12 @@ def main(iface: str) -> None:
                 last_sweep = now
             if now - last_beat >= HEARTBEAT_EVERY_S:
                 s = emitter.stats
+                p = publisher.stats
                 print(f"[+{int(now - last_beat)}s] pkts={pkts['n']} "
                       f"sent={s['sent']} attacks={s['attacks']} anomalies={s['anomalies']} "
                       f"benign={s['benign']} queued={emitter.q.qsize()} "
-                      f"dropped={s['dropped']} errors={s['errors']}")
+                      f"dropped={s['dropped']} errors={s['errors']}  "
+                      f"pub={p['attacks']}a/{p['anomalies']}n skip={p['skipped']} puberr={p['errors']}")
                 last_beat = now
     except KeyboardInterrupt:
         print("\ndraining...")
