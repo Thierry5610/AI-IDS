@@ -16,7 +16,7 @@ SYN, ACK, PSH = 0x02, 0x10, 0x08
 def _run(pkts):
     """pkts: list of (ts_us, src, dst, sport, dport, flags, payload, hdr, win)."""
     out = []
-    mgr = FlowManager(out.append)
+    mgr = FlowManager(lambda f, ident: out.append(f))
     for ts, s, d, sp, dp, fl, pl, hl, win in pkts:
         mgr.add_packet(PacketMeta(ts, s, d, sp, dp, 6, pl, hl, win, fl))
     mgr.flush()

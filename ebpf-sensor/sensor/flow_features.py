@@ -33,6 +33,8 @@ VERSION-SENSITIVE KNOBS (confirm against your X_test_sample.npy before trusting 
 
 from __future__ import annotations
 import math
+import socket
+import struct
 from dataclasses import dataclass, field
 from typing import Callable, Dict, Optional
 
@@ -142,6 +144,15 @@ def flow_key(m: PacketMeta):
     return (m.protocol, lo, hi)
 
 
+def _ip_to_str(ip) -> str:
+    """Render a PacketMeta IP as a dotted quad, accepting either representation the
+    two front-ends produce: pcap (dpkt) gives 4 packed BYTES; the eBPF path gives a
+    host-byte-order u32 int (bcc/proto.h convention, same as capture_probe.fmt_ip)."""
+    if isinstance(ip, (bytes, bytearray)):
+        return socket.inet_ntoa(bytes(ip))
+    return socket.inet_ntoa(struct.pack(">I", int(ip) & 0xFFFFFFFF))
+
+
 # ---------------------------------------------------------------------------
 # Flow
 # ---------------------------------------------------------------------------
@@ -149,6 +160,7 @@ class Flow:
     def __init__(self, first: PacketMeta):
         # Direction is fixed by the first packet: fwd = src->dst of that packet.
         self.src_ip, self.src_port = first.src_ip, first.src_port
+        self.dst_ip, self.dst_port = first.dst_ip, first.dst_port
         self.protocol = first.protocol
 
         self.start_us = first.ts_us
@@ -197,6 +209,18 @@ class Flow:
 
     def is_forward(self, m: PacketMeta) -> bool:
         return m.src_ip == self.src_ip and m.src_port == self.src_port
+
+    def identity(self) -> Dict[str, object]:
+        """Forward 5-tuple (first-packet src->dst). NOT the canonical flow_key, which
+        sorts endpoints and would flip ~half of flows. Sibling to the feature dict;
+        never mixed into the 56-feature contract."""
+        return {
+            "src_ip": _ip_to_str(self.src_ip),
+            "src_port": int(self.src_port),
+            "dst_ip": _ip_to_str(self.dst_ip),
+            "dst_port": int(self.dst_port),
+            "protocol": int(self.protocol),
+        }
 
     # --- update ------------------------------------------------------------
     def _update_active_idle(self, ts: int) -> None:
@@ -357,7 +381,7 @@ class Flow:
 # Flow manager — keying, direction, termination, emit callback
 # ---------------------------------------------------------------------------
 class FlowManager:
-    def __init__(self, on_flow: Callable[[Dict[str, float]], None],
+    def __init__(self, on_flow: Callable[[Dict[str, float], Dict[str, object]], None],
                  min_packets: int = MIN_PACKETS_TO_EMIT):
         self.flows: Dict[object, Flow] = {}
         self.on_flow = on_flow
@@ -367,7 +391,7 @@ class FlowManager:
         if (flow.fwd_count + flow.bwd_count) >= self.min_packets:
             dur = flow.last_us - flow.start_us
             if dur > 0:  # drop degenerate zero-duration flows (would yield inf rates; cleaned out of dataset)
-                self.on_flow(flow.emit())
+                self.on_flow(flow.emit(), flow.identity())
         self.flows.pop(key, None)
 
     def add_packet(self, m: PacketMeta) -> None:
@@ -405,7 +429,7 @@ class FlowManager:
 # ---------------------------------------------------------------------------
 # pcap front-end (validation source; later swapped for the eBPF ring buffer)
 # ---------------------------------------------------------------------------
-def run_pcap(path: str, on_flow: Callable[[Dict[str, float]], None]) -> int:
+def run_pcap(path: str, on_flow: Callable[[Dict[str, float], Dict[str, object]], None]) -> int:
     import dpkt
     mgr = FlowManager(on_flow)
     count = 0
@@ -450,7 +474,7 @@ if __name__ == "__main__":
         print("usage: python flow_features.py <capture.pcap>")
         sys.exit(1)
     flows = []
-    n = run_pcap(sys.argv[1], flows.append)
+    n = run_pcap(sys.argv[1], lambda f, ident: flows.append(f))
     print(f"packets read: {n}   flows emitted: {len(flows)}")
     if flows:
         print(json.dumps(flows[0], indent=2))

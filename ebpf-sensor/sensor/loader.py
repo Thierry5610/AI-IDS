@@ -38,8 +38,8 @@ def main(iface: str) -> None:
 
     pkts = {"n": 0}
 
-    def on_flow(feat: dict) -> None:
-        emitter.submit(feat)
+    def on_flow(feat: dict, ident: dict) -> None:
+        emitter.submit(feat, ident)
 
     mgr = FlowManager(on_flow)
 

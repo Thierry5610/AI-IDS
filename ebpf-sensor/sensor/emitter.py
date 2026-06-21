@@ -17,6 +17,14 @@ import urllib.error
 from datetime import datetime, timezone
 
 
+def _flow_id(identity: dict) -> str:
+    """Stable, greppable per-edge id from the forward 5-tuple:
+    'proto-src:sport-dst:dport'. Per-edge, not globally unique (a recurring 5-tuple
+    reuses it) — fine for topology/attribution; the dashboard keys on the edge."""
+    return (f"{identity['protocol']}-{identity['src_ip']}:{identity['src_port']}"
+            f"-{identity['dst_ip']}:{identity['dst_port']}")
+
+
 class PredictEmitter:
     def __init__(self, url="http://127.0.0.1:8000/predict", maxsize=2000, timeout=3.0):
         self.url = url
@@ -31,10 +39,11 @@ class PredictEmitter:
     def start(self):
         self._t.start()
 
-    def submit(self, features: dict, flow_id: str = None):
-        """Non-blocking. Drops (and counts) if the queue is full rather than stalling capture."""
+    def submit(self, features: dict, identity: dict = None):
+        """Non-blocking. Drops (and counts) if the queue is full rather than stalling capture.
+        identity = forward 5-tuple dict from FlowManager (src/dst ip+port, protocol)."""
         try:
-            self.q.put_nowait((features, flow_id))
+            self.q.put_nowait((features, identity))
         except queue.Full:
             self.stats["dropped"] += 1
 
@@ -43,11 +52,11 @@ class PredictEmitter:
         self._t.join(timeout=3)
 
     # -- internals ----------------------------------------------------------
-    def _post(self, features, flow_id):
+    def _post(self, features, identity):
         body = {"features": features,
                 "timestamp": datetime.now(timezone.utc).isoformat()}
-        if flow_id:
-            body["flow_id"] = flow_id
+        if identity:
+            body["flow_id"] = _flow_id(identity)
         req = urllib.request.Request(
             self.url, data=json.dumps(body).encode(),
             headers={"Content-Type": "application/json"}, method="POST")
@@ -57,11 +66,11 @@ class PredictEmitter:
     def _worker(self):
         while not self._stop.is_set():
             try:
-                features, flow_id = self.q.get(timeout=0.2)
+                features, identity = self.q.get(timeout=0.2)
             except queue.Empty:
                 continue
             try:
-                self._handle(self._post(features, flow_id))
+                self._handle(self._post(features, identity), identity)
                 self.stats["sent"] += 1
             except urllib.error.URLError as e:
                 self.stats["errors"] += 1
@@ -78,20 +87,24 @@ class PredictEmitter:
             finally:
                 self.q.task_done()
 
-    def _handle(self, resp: dict):
+    def _handle(self, resp: dict, identity: dict = None):
         pred = resp.get("prediction") or {}
         agr = resp.get("agreement") or {}
         ae = (resp.get("model_votes") or {}).get("autoencoder") or {}
+        who = ""
+        if identity:
+            who = (f"  {identity['src_ip']}:{identity['src_port']}"
+                   f"->{identity['dst_ip']}:{identity['dst_port']}")
 
         if resp.get("is_attack"):
             self.stats["attacks"] += 1
             print(f"ALERT    {str(pred.get('label')):22} conf={pred.get('confidence', 0):.2f}  "
                   f"src={resp.get('source_model')}  "
-                  f"agree={agr.get('agreeing')}/{agr.get('total')}")
+                  f"agree={agr.get('agreeing')}/{agr.get('total')}{who}")
         elif ae.get("is_anomalous"):
             # supervised models say benign, autoencoder disagrees -> possible zero-day
             self.stats["anomalies"] += 1
             print(f"ANOMALY  (autoencoder)         score={ae.get('anomaly_score', 0):.4f}  "
-                  f"thr={ae.get('threshold')}")
+                  f"thr={ae.get('threshold')}{who}")
         else:
             self.stats["benign"] += 1

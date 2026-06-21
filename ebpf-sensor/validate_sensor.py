@@ -29,7 +29,7 @@ def _stats(df: pd.DataFrame) -> pd.DataFrame:
 
 def main(pcap: str, art: str = "../inference-service/app/artifacts") -> None:
     flows = []
-    n_pkts = run_pcap(pcap, flows.append)
+    n_pkts = run_pcap(pcap, lambda f, ident: flows.append(f))
     if not flows:
         print(f"No flows emitted (packets read: {n_pkts}). "
               "Capture may be too short or have no TCP/UDP traffic.")

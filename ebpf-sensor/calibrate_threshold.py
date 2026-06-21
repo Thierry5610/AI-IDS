@@ -50,7 +50,7 @@ def _score(features):
 
 def main(pcap: str) -> None:
     flows = []
-    run_pcap(pcap, lambda f: flows.append(f))
+    run_pcap(pcap, lambda f, ident: flows.append(f))
     if not flows:
         print("no flows in capture")
         return
