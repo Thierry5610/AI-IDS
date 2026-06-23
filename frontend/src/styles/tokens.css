@@ -1,0 +1,30 @@
+/* ── Beehive design tokens ── do not edit values here directly;
+   source of truth is VIGIL-THEME-SKILL.md in project knowledge ── */
+:root {
+  --bg:           #070707;
+  --surface:      #0e0e0e;
+  --surface-2:    #161616;
+  --glass-bg:     rgba(20,21,18,0.5);
+  --glass-bg-2:   rgba(255,255,255,0.04);
+  --border:       rgba(255,255,255,0.08);
+  --border-strong:rgba(255,255,255,0.16);
+  --text:         #f3f3ef;
+  --muted:        #9a9a93;
+  --muted-2:      #5c5c56;
+  --lime:         #d4ff3d;
+  --lime-dim:     rgba(212,255,61,0.14);
+  --cyan:         #3de8ff;
+  --violet:       #b26eff;
+  --green:        #34d399;
+  --green-soft:   rgba(52,211,153,0.14);
+  --amber:        #ffb020;
+  --amber-soft:   rgba(255,176,32,0.14);
+  --red:          #ff4d5e;
+  --red-soft:     rgba(255,77,94,0.14);
+  --r-lg:         16px;
+  --r-md:         12px;
+  --r-sm:         9px;
+  --f-display:    'Space Grotesk', sans-serif;
+  --f-body:       'Inter', sans-serif;
+  --f-mono:       'JetBrains Mono', monospace;
+}

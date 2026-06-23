@@ -40,4 +40,4 @@ azure-credentials*.json
 *.swp
 
 # keep the artifacts dir tracked but empty
-!**/.gitkeep
+!**/.gitkeepbeehive_state.md

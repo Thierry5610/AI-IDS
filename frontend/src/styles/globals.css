@@ -1,0 +1,35 @@
+/* ── Reset + base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { font-family: inherit; cursor: pointer; background: none; border: none; color: inherit; }
+a      { color: inherit; text-decoration: none; }
+svg    { stroke-width: 2; }
+
+:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Ambient glow body (fixed so it doesn't scroll) ── */
+html, body {
+  color:        var(--text);
+  font-family:  var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(620px circle at 10% 15%,  rgba(212,255,61,0.09),  transparent 60%),
+    radial-gradient(680px circle at 90% 10%,  rgba(61,232,255,0.07),  transparent 60%),
+    radial-gradient(720px circle at 75% 90%,  rgba(178,110,255,0.08), transparent 60%),
+    radial-gradient(500px circle at 20% 85%,  rgba(212,255,61,0.05),  transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* ── Honour reduced-motion preference ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration:        0.01ms !important;
+    animation-iteration-count: 1      !important;
+    transition-duration:       0.01ms !important;
+  }
+}
