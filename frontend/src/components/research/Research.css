@@ -1,0 +1,33 @@
+/* ── Research / AE — finding narrative + distribution (classes not in shell.css) ── */
+
+.rs-finding { font-size: 13px; line-height: 1.65; color: var(--muted); }
+.rs-finding b { color: var(--text); font-weight: 600; }
+.rs-finding .hl { color: var(--violet); font-weight: 600; }
+
+.rs-tag {
+  display: inline-block; font-family: var(--f-mono); font-size: 9.5px;
+  letter-spacing: .5px; text-transform: uppercase; color: var(--amber);
+  background: var(--amber-soft); border-radius: 99px; padding: 2px 8px; margin-left: 8px;
+}
+
+/* danger vs warning contrast */
+.rs-split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .rs-split { grid-template-columns: 1fr; } }
+.rs-split-cell {
+  border: 1px solid var(--border-strong); border-radius: var(--r-md); padding: 14px;
+}
+.rs-split-cell.danger  { border-color: rgba(255,77,94,0.30); }
+.rs-split-cell.warning { border-color: rgba(178,110,255,0.30); }
+.rs-split-head { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.rs-split-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.rs-split-title { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.rs-split-num  { font-family: var(--f-display); font-size: 26px; font-weight: 600; }
+.rs-split-desc { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted-2);
+                 line-height: 1.5; margin-top: 6px; }
+
+.rs-kv { display: flex; flex-direction: column; gap: 10px; margin-top: 2px; }
+.rs-kv-row { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+.rs-kv-row .k { color: var(--muted); }
+.rs-kv-row .v { font-family: var(--f-mono); font-size: 12px; color: var(--text); text-align: right; }
+.rs-note { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted-2);
+           line-height: 1.55; margin-top: 12px; }
