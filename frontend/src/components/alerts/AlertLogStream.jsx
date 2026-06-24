@@ -64,7 +64,7 @@ export default function AlertLogStream({ alerts, maxRows = 6 }) {
   return (
     <div className="log">
       {rows.map((a, i) => (
-        <Row key={a.flow_id ?? i} alert={a} isLast={i === rows.length - 1} />
+        <Row key={`${a.flow_id ?? 'a'}-${a.timestamp ?? ''}-${i}`} alert={a} isLast={i === rows.length - 1} />
       ))}
     </div>
   )

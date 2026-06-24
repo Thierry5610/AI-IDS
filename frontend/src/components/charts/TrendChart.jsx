@@ -5,7 +5,7 @@
  *
  * Props: alerts (array from useAlertStore)
  */
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 const W = 600, H = 200
 const X0 = 30, X1 = 570, Y0 = 22, Y1 = 185
@@ -49,15 +49,28 @@ export default function TrendChart({ alerts }) {
   const polyStr  = ptStr(pts)
   const areaStr  = `${polyStr} ${X1},${Y1} ${X0},${Y1}`
 
-  // Peak point for tooltip
-  const peakIdx  = counts.indexOf(Math.max(...counts))
-  const [px, py] = pts[peakIdx] ?? [X1, Y1]
-  const hasPeak  = counts[peakIdx] > 0
+  // Hover-driven point (nearest bucket to the cursor)
+  const wrapRef = useRef(null)
+  const [hoverIdx, setHoverIdx] = useState(null)
+
+  function onMove(e) {
+    const el = wrapRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    if (rect.width === 0) return
+    const frac = (e.clientX - rect.left) / rect.width
+    const idx  = Math.round(Math.min(Math.max(frac, 0), 1) * (N_BUCKETS - 1))
+    setHoverIdx(idx)
+  }
+
+  const active   = hoverIdx != null
+  const [hx, hy] = active ? (pts[hoverIdx] ?? [X1, Y1]) : [0, 0]
 
   const gridYs = [Y0, (Y0 + Y1) / 2, Y1]
 
   return (
-    <div style={{ position: 'relative', marginTop: 4 }}>
+    <div ref={wrapRef} style={{ position: 'relative', marginTop: 4 }}
+         onMouseMove={onMove} onMouseLeave={() => setHoverIdx(null)}>
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="190" preserveAspectRatio="none">
         <defs>
           <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
@@ -75,9 +88,9 @@ export default function TrendChart({ alerts }) {
             stroke="var(--border)" strokeWidth="1" />
         ))}
 
-        {/* Peak marker */}
-        {hasPeak && (
-          <line x1={px} y1={Y0} x2={px} y2={Y1}
+        {/* Hover marker */}
+        {active && (
+          <line x1={hx} y1={Y0} x2={hx} y2={Y1}
             stroke="var(--border-strong)" strokeWidth="1" strokeDasharray="3 4" />
         )}
 
@@ -95,28 +108,28 @@ export default function TrendChart({ alerts }) {
           stroke="var(--lime)" strokeWidth="2.2"
           strokeLinecap="round" strokeLinejoin="round" />
 
-        {/* Peak dot */}
-        {hasPeak && (
-          <circle cx={px} cy={py} r="3.5"
+        {/* Hover dot */}
+        {active && (
+          <circle cx={hx} cy={hy} r="3.5"
             fill="var(--bg)" stroke="var(--lime)" strokeWidth="2" />
         )}
       </svg>
 
-      {/* Floating tooltip at peak */}
-      {hasPeak && (
+      {/* Floating tooltip — only while hovering, follows the nearest bucket */}
+      {active && (
         <div style={{
           position: 'absolute',
-          left: `${((px - X0) / (X1 - X0) * 100).toFixed(1)}%`,
-          top:  `${((py - Y0) / (Y1 - Y0) * 100).toFixed(1)}%`,
+          left: `${(hx / W * 100).toFixed(1)}%`,
+          top:  `${(hy / H * 100).toFixed(1)}%`,
           transform: 'translate(-50%, -130%)',
           background: 'var(--surface-2)', border: '1px solid var(--border-strong)',
           borderRadius: 10, padding: '6px 11px', whiteSpace: 'nowrap', pointerEvents: 'none',
         }}>
           <div style={{ fontFamily: 'var(--f-mono)', fontSize: 12, fontWeight: 600, color: 'var(--lime)' }}>
-            {counts[peakIdx]} events
+            {counts[hoverIdx]} events
           </div>
           <div style={{ fontSize: 9, color: 'var(--muted-2)', marginTop: 1 }}>
-            Peak · {LABELS[peakIdx]}
+            {LABELS[hoverIdx]}
           </div>
         </div>
       )}

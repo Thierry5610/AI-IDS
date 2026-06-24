@@ -77,7 +77,6 @@ export default function RadarChart({ data = {} }) {
             <text key={ax.id} x={lx.toFixed(1)} y={ly.toFixed(1)}
               textAnchor={ax.anchor}
               fontSize="7" letterSpacing="0.4"
-              textTransform="uppercase"
               fill="var(--muted-2)"
               fontFamily="var(--f-body)"
               style={{ textTransform: 'uppercase' }}>
