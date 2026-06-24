@@ -183,7 +183,8 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .filter-pill {
   padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 600;
   background: var(--glass-bg-2); border: 1px solid var(--border-strong);
-  color: var(--muted); cursor: pointer; transition: all .15s;
+  color: var(--muted); cursor: pointer;
+  transition: color .15s, background .15s, border-color .15s;
 }
 .filter-pill.active { background: var(--lime-dim); border-color: var(--lime); color: var(--lime); }
 
@@ -323,3 +324,32 @@ html { zoom: 1.25; }
 .kpi.featured .kpi-label { color: rgba(10,10,10,0.62); }
 .kpi.featured .kpi-value { color: #0a0a0a; }
 .kpi.featured .delta     { background: rgba(10,10,10,0.14); color: #0a0a0a; }
+
+/* ===== Micro-interactions (Emil-Kowalski motion pass) ===== */
+
+/* Press feedback — subtle physical push on pressables (GPU-only, <300ms).
+   :active (not :hover), so safe on touch; no false-hover gating needed. */
+.btn, .filter-pill, .pg-btn, .rail-item {
+  transition: color .15s, background .15s, border-color .15s, opacity .15s,
+              transform 140ms var(--ease-out);
+}
+.btn:active,
+.filter-pill:active,
+.pg-btn:active,
+.rail-item:active { transform: scale(0.97); }
+.pg-btn:disabled:active { transform: none; }
+
+/* Per-page entrance — subtle one-time fade+rise on the major sections.
+   GPU-only (transform/opacity); short because navigation is frequent.
+   Neutralised by the global prefers-reduced-motion rule in globals.css. */
+.bento > * { animation: bee-rise 240ms var(--ease-out) both; }
+.bento > *:nth-child(2)    { animation-delay: 50ms;  }
+.bento > *:nth-child(3)    { animation-delay: 100ms; }
+.bento > *:nth-child(4)    { animation-delay: 150ms; }
+.bento > *:nth-child(5)    { animation-delay: 200ms; }
+.bento > *:nth-child(n+6)  { animation-delay: 240ms; }
+
+@keyframes bee-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}

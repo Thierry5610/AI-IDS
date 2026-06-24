@@ -69,9 +69,10 @@
 .topo-toggle button {
   padding: 5px 14px; border-radius: 99px;
   font-size: 12px; font-weight: 600; color: var(--muted);
-  transition: color .15s, background .15s;
+  transition: color .15s, background .15s, transform 140ms var(--ease-out);
 }
 .topo-toggle button:hover { color: var(--text); }
+.topo-toggle button:active { transform: scale(0.97); }
 .topo-toggle button.active.attacks   { color: #0a0a0a; background: var(--lime); }
 .topo-toggle button.active.anomalies { color: var(--violet); background: rgba(178,110,255,0.16); }
 
