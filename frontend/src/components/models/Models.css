@@ -1,0 +1,62 @@
+/* ── Models page — only classes not already in shell.css ── */
+
+/* Per-model cards */
+.models-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+@media (max-width: 1180px) { .models-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px)  { .models-grid { grid-template-columns: 1fr; } }
+
+.m-card { display: flex; flex-direction: column; }
+.m-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.m-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.m-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.m-short{ font-family: var(--f-mono); font-size: 10px; color: var(--muted-2); }
+.m-role { font-size: 10.5px; color: var(--muted-2); font-family: var(--f-mono);
+          margin-bottom: 14px; }
+
+.m-stat-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.m-k { font-size: 11px; color: var(--muted); }
+.m-v { font-family: var(--f-mono); font-size: 12px; color: var(--text); }
+
+.m-bar  { height: 5px; border-radius: 3px; background: var(--glass-bg-2);
+          overflow: hidden; position: relative; }
+.m-bar i { display: block; height: 100%; border-radius: 3px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+/* AE score bar with a fixed threshold marker */
+.m-bar-ae i { background: var(--violet); }
+.m-threshold { position: absolute; top: -2px; bottom: -2px; left: 100%; width: 2px;
+               background: var(--amber); }   /* avg vs threshold: bar fills toward 100% = threshold */
+
+.m-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 14px;
+          padding-top: 12px; border-top: 1px solid var(--border);
+          font-size: 10.5px; color: var(--muted-2); }
+.m-foot b { color: var(--text); font-family: var(--f-display); font-weight: 600; font-size: 13px; }
+
+.m-card-ae { border-color: rgba(178,110,255,0.30); }
+
+/* ── Source-model win distribution ── */
+.win-list { display: flex; flex-direction: column; gap: 14px; margin-top: 2px; }
+.win-row  { display: grid; grid-template-columns: 110px 1fr 44px; align-items: center; gap: 10px; }
+.win-name { display: flex; align-items: center; gap: 7px; font-size: 12.5px; }
+.win-name .m-dot { width: 8px; height: 8px; }
+.win-bar  { height: 8px; border-radius: 4px; background: var(--glass-bg-2); overflow: hidden; }
+.win-bar i{ display: block; height: 100%; border-radius: 4px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+.win-pct  { font-family: var(--f-mono); font-size: 11px; color: var(--muted); text-align: right; }
+
+.win-consensus { display: flex; align-items: baseline; gap: 8px;
+                 border-top: 1px solid var(--border); margin-top: 16px; padding-top: 14px; }
+.win-consensus b { font-family: var(--f-display); font-size: 22px; font-weight: 600; color: var(--lime); }
+.win-consensus span { font-size: 11px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Vote matrix ── */
+.vote-matrix thead th { text-align: center; }
+.vote-matrix thead th:first-child { text-align: left; }
+.vote-matrix td { text-align: center; }
+.vm-flow { text-align: left !important; color: var(--muted); }
+.vm-cell { }
+.vm-label { display: block; font-size: 11.5px; color: var(--text); }
+.vm-conf  { display: block; font-family: var(--f-mono); font-size: 9.5px; color: var(--muted-2); }
+.vm-dis   { background: rgba(255,176,32,0.08); }
+.vm-dis .vm-label { color: var(--amber); }
+.vm-decided { font-size: 11.5px; font-weight: 600; }
+.vm-empty { display: flex; align-items: center; justify-content: center; height: 120px;
+            color: var(--muted-2); font-family: var(--f-mono); font-size: 13px; }
