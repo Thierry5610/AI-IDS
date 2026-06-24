@@ -20,4 +20,17 @@ export const fmt = {
 
   /** 6→TCP, 17→UDP, 1→ICMP */
   proto: (n) => ({ 6: 'TCP', 17: 'UDP', 1: 'ICMP' }[n] ?? String(n ?? '?')),
+
+  /**
+   * Compact number for raw SHAP feature values / shap_values, which span tiny
+   * fractions to large CICFlowMeter magnitudes. Keeps a sign, trims noise.
+   */
+  num: (v) => {
+    if (v == null || Number.isNaN(Number(v))) return '—'
+    const n = Number(v)
+    const a = Math.abs(n)
+    if (a !== 0 && (a >= 1e5 || a < 1e-3)) return n.toExponential(1)
+    if (Number.isInteger(n))               return String(n)
+    return n.toFixed(a < 1 ? 3 : 2)
+  },
 }
