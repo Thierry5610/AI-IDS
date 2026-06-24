@@ -1,0 +1,27 @@
+/* ── Settings — read-only config/status (only classes not in shell.css) ── */
+
+.set-kv { display: flex; flex-direction: column; gap: 11px; }
+.set-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding-bottom: 11px; border-bottom: 1px solid var(--border);
+}
+.set-row:last-child { border-bottom: none; padding-bottom: 0; }
+.set-k { font-size: 12.5px; color: var(--muted); }
+.set-v { font-family: var(--f-mono); font-size: 12px; color: var(--text); text-align: right; }
+.set-v.accent { color: var(--lime); }
+
+.set-note { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted-2);
+            line-height: 1.55; margin-top: 12px; }
+
+/* Model list */
+.set-models { display: flex; flex-direction: column; gap: 10px; }
+.set-model  { display: flex; align-items: center; gap: 10px; }
+.set-model-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.set-model-name { font-size: 12.5px; color: var(--text); width: 120px; flex-shrink: 0; }
+.set-model-role { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted-2); flex: 1; }
+
+/* Live ingest dot */
+.set-live { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
+.set-live .dot { width: 7px; height: 7px; border-radius: 50%; }
+.set-live.on  .dot { background: var(--green); }
+.set-live.off .dot { background: var(--muted-2); }
