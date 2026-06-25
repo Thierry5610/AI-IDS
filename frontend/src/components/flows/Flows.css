@@ -24,7 +24,8 @@
 }
 .tape-head .tape-bar { background: none; }
 
-.tape-body { max-height: 560px; overflow-y: auto; }
+/* No nested scroll — the tape scrolls with .main (single scrollbar). */
+.tape-body { }
 .tape-row {
   font-size: 11.5px; padding: 6px; border-bottom: 1px solid var(--border);
   transition: background .12s;

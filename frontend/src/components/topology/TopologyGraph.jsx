@@ -53,10 +53,11 @@ function quadPoint(s, c, t, u) {
   }
 }
 
-const nodeRadius = n => 5 + Math.min(Math.sqrt(n.count || 1) * 1.6, 9)
+const nodeRadius = n => 9 + Math.min(Math.sqrt(n.count || 1) * 2, 13)
 
 export default function TopologyGraph({ graph, mode, selectedId, onSelect }) {
   const wrapRef = useRef(null)
+  const fgRef = useRef(null)
   const cacheRef = useRef(new Map())          // id → node obj (preserve positions)
   const [size, setSize] = useState({ w: 600, h: 540 })
   const colors = useThemeColors()
@@ -91,6 +92,16 @@ export default function TopologyGraph({ graph, mode, selectedId, onSelect }) {
     return { nodes, links }
   }, [graph])
 
+  // Force layout: stronger local repulsion to declutter, capped range so disconnected
+  // components don't drift apart; comfortable link distance for connected pairs.
+  useEffect(() => {
+    const fg = fgRef.current
+    if (!fg) return
+    fg.d3Force('charge').strength(-180).distanceMax(220)
+    fg.d3Force('link').distance(60)
+    fg.d3ReheatSimulation()
+  }, [data])
+
   const sevColor = sev =>
     ({ critical: colors.red, high: colors.amber, medium: colors.cyan, low: colors.muted }[sev] || colors.muted)
   const linkAccent = link =>
@@ -115,7 +126,7 @@ export default function TopologyGraph({ graph, mode, selectedId, onSelect }) {
     if (p) {
       ctx.save()
       ctx.translate(node.x, node.y)
-      const s = (R * 1.05) / 24
+      const s = (R * 1.15) / 24
       ctx.scale(s, s)
       ctx.translate(-12, -12)
       ctx.lineWidth = 1.8 / s
@@ -171,6 +182,7 @@ export default function TopologyGraph({ graph, mode, selectedId, onSelect }) {
   return (
     <div ref={wrapRef} className="topo-graph">
       <ForceGraph2D
+        ref={fgRef}
         width={size.w}
         height={size.h}
         graphData={data}

@@ -10,7 +10,9 @@ svg    { stroke-width: 2; }
   border-radius: 6px;
 }
 
-/* ── Ambient glow body (fixed so it doesn't scroll) ── */
+/* ── Ambient glow body — body never scrolls (.main is the scroller), so the
+   glow stays pinned to the viewport without background-attachment:fixed (which
+   forced a full-background repaint on every scroll frame). ── */
 html, body {
   color:        var(--text);
   font-family:  var(--f-body);
@@ -21,9 +23,13 @@ html, body {
     radial-gradient(720px circle at 75% 90%,  rgba(178,110,255,0.08), transparent 60%),
     radial-gradient(500px circle at 20% 85%,  rgba(212,255,61,0.05),  transparent 60%),
     var(--bg);
-  background-attachment: fixed;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
 }
+
+/* The React mount must carry the full height too, or .app/.main collapse to
+   content height and the single scroll container can't form. */
+#root { height: 100%; }
 
 /* ── Honour reduced-motion preference ── */
 @media (prefers-reduced-motion: reduce) {

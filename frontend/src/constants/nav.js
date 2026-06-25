@@ -14,19 +14,19 @@ export const NAV_ITEMS = [
   },
   {
     id: 'alerts', path: '/alerts', label: 'Alerts',
-    icon: '<circle cx="12" cy="12" r="8.5"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.5" fill="currentColor" stroke="none"/>',
+    icon: '<path d="M18 8.5a6 6 0 10-12 0c0 4.5-2 5.5-2 7h16c0-1.5-2-2.5-2-7z"/><path d="M10 19.5a2 2 0 004 0"/>',
   },
   {
     id: 'flows', path: '/flows', label: 'Flows',
-    icon: '<path d="M4 12h12M13 8l4 4-4 4"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/>',
+    icon: '<path d="M4 8.5h12M13 5l4 3.5-4 3.5"/><path d="M20 15.5H8M11 12l-4 3.5 4 3.5"/>',
   },
   {
     id: 'models', path: '/models', label: 'Models',
-    icon: '<rect x="5" y="3" width="14" height="18" rx="2"/><rect x="8" y="13" width="2" height="5" fill="currentColor" stroke="none"/><rect x="11.3" y="10" width="2" height="8" fill="currentColor" stroke="none"/><rect x="14.6" y="7" width="2" height="11" fill="currentColor" stroke="none"/>',
+    icon: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><rect x="10" y="10" width="4" height="4" rx="0.6" fill="currentColor" stroke="none"/><path d="M10 3v2.5M14 3v2.5M10 18.5V21M14 18.5V21M3 10h2.5M3 14h2.5M18.5 10H21M18.5 14H21"/>',
   },
   {
     id: 'research', path: '/research', label: 'Research',
-    icon: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.6" fill="currentColor" stroke="none" opacity="0.18"/><circle cx="12" cy="12" r="3.6"/><circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none"/>',
+    icon: '<path d="M9.5 3h5M11 3v5.5L6 18a1.8 1.8 0 001.6 2.7h8.8A1.8 1.8 0 0018 18l-5-9.5V3"/><path d="M8 14.5h8"/>',
   },
 ]
 
