@@ -1,0 +1,75 @@
+name: ids-traffic-harness
+
+# Benign-only fleet on a dedicated user-defined bridge so container-to-container
+# traffic is visible on the host br-<id> interface for capture. Bridge driver only.
+
+networks:
+  ids-net:
+    name: ids-net
+    driver: bridge
+
+services:
+  web:
+    build: ./services/web
+    image: ids-harness-web:1
+    container_name: web
+    networks: [ids-net]
+    restart: unless-stopped
+
+  db:
+    image: mariadb:11.4
+    container_name: db
+    networks: [ids-net]
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: labdb
+      MARIADB_USER: labuser
+      MARIADB_PASSWORD: labpass
+    volumes:
+      - ./services/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  ssh:
+    build: ./services/ssh
+    image: ids-harness-ssh:1
+    container_name: ssh
+    networks: [ids-net]
+    restart: unless-stopped
+
+  dns:
+    build: ./services/dns
+    image: ids-harness-dns:1
+    container_name: dns
+    networks: [ids-net]
+    cap_add: [NET_ADMIN]
+    restart: unless-stopped
+
+  client:
+    build: ./services/client
+    image: ids-harness-client:1
+    container_name: client
+    networks: [ids-net]
+    volumes:
+      - ./generators:/gen:ro
+    depends_on:
+      db: { condition: service_healthy }
+      web: { condition: service_started }
+      ssh: { condition: service_started }
+      dns: { condition: service_started }
+    command: ["sleep", "infinity"]
+
+  attacker:
+    build: ./services/client
+    image: ids-harness-client:1
+    container_name: attacker
+    networks: [ids-net]
+    volumes:
+      - ./generators:/gen:ro
+    depends_on:
+      db: { condition: service_healthy }
+    command: ["sleep", "infinity"]

@@ -1,0 +1,4 @@
+# Captures and feature matrices are large and regenerable; never commit them.
+data/*
+!data/.gitkeep
+*.pcap
