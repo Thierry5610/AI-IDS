@@ -1,0 +1,34 @@
+{
+  "chosen_threshold": 0.3791940212249756,
+  "percentile_used": 99,
+  "candidate_percentiles": {
+    "p95": 0.0908379778265953,
+    "p97_5": 0.24829286336898804,
+    "p99": 0.3791940212249756
+  },
+  "val_error_distribution": {
+    "min": 0.002187234116718173,
+    "median": 0.006519019603729248,
+    "mean": 0.0774109736084938,
+    "p95": 0.0908379778265953,
+    "p97_5": 0.24829286336898804,
+    "p99": 0.3791940212249756,
+    "max": 88.06378936767578
+  },
+  "n_train": 8175,
+  "n_val": 2044,
+  "total_rows": 10219,
+  "per_file_rows": {
+    "X_benign_local.npy": 10219
+  },
+  "final_val_loss": 0.07741096615791321,
+  "seed": 1337,
+  "source_folder": "/media/thierry/TempStorage1/AI-IDS/traffic-harness/data",
+  "combined_matrix_sha256": "3c73a9b288789a4032a99ade0e25ac69c68e664014642efc0f30e1e1ba234a40",
+  "after_benign_fp_rate": 0.009785693316371465,
+  "before_benign_fp_rate_local": 0.8774831196790293,
+  "original_threshold": 0.0726,
+  "framework": "torch 2.10.0+cpu",
+  "git_commit": "ace75b11f2747f598d8b4e87e45154ed7b0a8dcf",
+  "date_utc": "2026-06-27T11:55:02+00:00"
+}
