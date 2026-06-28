@@ -1,0 +1,20 @@
+# Attack toolchain, layered ON TOP of the benign client image (ids-harness-client:1).
+# This is additive: the benign attacker container and its image are untouched, so the
+# AE benign baseline stays valid. Built as a separate tag ids-harness-attacker:1.
+# Build context must be traffic-harness/ so the attacks/ dir is reachable:
+#   docker build -f services/attacker/Dockerfile.attack -t ids-harness-attacker:1 .
+# No em dashes anywhere.
+FROM ids-harness-client:1
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      nmap hydra slowhttptest dirb sqlmap python3 \
+ && rm -rf /var/lib/apt/lists/*
+
+# Bake the attack scripts and wordlists into the image so the runner can exec them
+# directly inside the attacker container.
+COPY attacks /attacks
+RUN chmod +x /attacks/*.sh
+
+WORKDIR /attacks
+CMD ["sleep", "infinity"]

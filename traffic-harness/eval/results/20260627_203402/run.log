@@ -1,0 +1,569 @@
+==========================================
+AI-IDS Attack Eval (Instrument A)  20260627_203402
+REPO=/media/thierry/TempStorage2/AI-IDS
+OUTDIR=/media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402
+INFERENCE_URL=http://127.0.0.1:8000
+==========================================
+[prereq] inference /health ...
+  raw: {"status":"ok","feature_contract":"loaded","models":{"random_forest":"loaded","xgboost":"loaded","lightgbm":"loaded","cnn_lstm":"loaded","autoencoder":"loaded"},"label_encoder":true,"ae_scaler":true,"dl_scaler":false}
+  health: ok
+[prereq] AE threshold smoke /predict ...
+  AE threshold reported: 0.3791940212249756 (expect ~0.379194)
+[prereq] attack image ...
+[prereq] fleet up (web, ssh, db) ...
+[prereq] all checks passed.
+[ips] attacker=172.20.0.9 web=172.20.0.2 ssh=172.20.0.4 client=172.20.0.6
+[bridge] br-172a4c4f4be4
+[offload] disabling tso/gso/gro on bridge + veths + container eth0 ...
+[offload] done.
+
+=== WINDOW: 00_benign_control (filter: host 172.20.0.6) ===
+--- firing: docker exec client bash /gen/simulate.sh 60 ---
+starting benign simulation for 60s
+simulation complete
+packets read:   128114
+flows captured: 557
+saved matrix:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/00_benign_control.X.npy shape=(557, 56)
+saved csv:      /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/00_benign_control.X.csv
+saved idents:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/00_benign_control.ids.jsonl (557 rows)
+[score] 00_benign_control: all 557 captured, errors=0 -> /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/00_benign_control.flows.jsonl
+
+=== WINDOW: 01_portscan (filter: host 172.20.0.9 and host 172.20.0.2) ===
+--- firing: fire 01_portscan.sh --target 172.20.0.2 ---
+TOOL nmap -sT -p- -T4 172.20.0.2
+START_EPOCH 1782588969
+Starting Nmap 7.93 ( https://nmap.org ) at 2026-06-27 19:36 UTC
+Nmap scan report for web.ids-net (172.20.0.2)
+Host is up (0.00035s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT    STATE SERVICE
+80/tcp  open  http
+443/tcp open  https
+MAC Address: 46:46:17:6A:C7:CA (Unknown)
+
+Nmap done: 1 IP address (1 host up) scanned in 3.78 seconds
+END_EPOCH 1782588972
+packets read:   131063
+flows captured: 65529
+saved matrix:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/01_portscan.X.npy shape=(65529, 56)
+saved csv:      /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/01_portscan.X.csv
+saved idents:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/01_portscan.ids.jsonl (65529 rows)
+[score] 01_portscan: sampled 3000 of 65529 captured, errors=0 -> /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/01_portscan.flows.jsonl
+
+=== WINDOW: 02_dos_hulk (filter: host 172.20.0.9 and host 172.20.0.2) ===
+--- firing: fire 02_dos_hulk.sh --target 172.20.0.2 --duration 30 ---
+TOOL goldeneye http://172.20.0.2:80/ duration=30s workers=50
+START_EPOCH 1782589203
+goldeneye: 50 workers -> 172.20.0.2:80/ for 30s
+goldeneye: sent ~125025 requests
+END_EPOCH 1782589233
+packets read:   634148
+flows captured: 12466
+saved matrix:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/02_dos_hulk.X.npy shape=(12466, 56)
+saved csv:      /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/02_dos_hulk.X.csv
+saved idents:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/02_dos_hulk.ids.jsonl (12466 rows)
+[score] 02_dos_hulk: sampled 3000 of 12466 captured, errors=0 -> /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/02_dos_hulk.flows.jsonl
+
+=== WINDOW: 03_slowloris (filter: host 172.20.0.9 and host 172.20.0.2) ===
+--- firing: fire 03_slowloris.sh --target 172.20.0.2 --duration 60 ---
+TOOL slowhttptest -c 500 -H -u http://172.20.0.2:80/ -l 60
+START_EPOCH 1782589501
+Sat Jun 27 19:45:01 2026:[H[2JSat Jun 27 19:45:01 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:01 2026:[1;32m
+slow HTTP test status on [0;32m0[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        1
+[1;32mconnected:   [1;32m        0
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:06 2026:[H[2JSat Jun 27 19:45:06 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:06 2026:[1;32m
+slow HTTP test status on [0;32m5[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:11 2026:[H[2JSat Jun 27 19:45:11 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:11 2026:[1;32m
+slow HTTP test status on [0;32m10[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:16 2026:[H[2JSat Jun 27 19:45:16 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:16 2026:[1;32m
+slow HTTP test status on [0;32m15[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:21 2026:[H[2JSat Jun 27 19:45:21 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:21 2026:[1;32m
+slow HTTP test status on [0;32m20[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:26 2026:[H[2JSat Jun 27 19:45:26 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:26 2026:[1;32m
+slow HTTP test status on [0;32m25[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:31 2026:[H[2JSat Jun 27 19:45:31 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:31 2026:[1;32m
+slow HTTP test status on [0;32m30[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:36 2026:[H[2JSat Jun 27 19:45:36 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:36 2026:[1;32m
+slow HTTP test status on [0;32m35[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:41 2026:[H[2JSat Jun 27 19:45:41 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:41 2026:[1;32m
+slow HTTP test status on [0;32m40[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:46 2026:[H[2JSat Jun 27 19:45:46 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:46 2026:[1;32m
+slow HTTP test status on [0;32m45[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:51 2026:[H[2JSat Jun 27 19:45:51 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:51 2026:[1;32m
+slow HTTP test status on [0;32m50[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:45:56 2026:[H[2JSat Jun 27 19:45:56 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:45:56 2026:[1;32m
+slow HTTP test status on [0;32m55[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:46:01 2026:[H[2JSat Jun 27 19:46:01 2026:
+	[1;36mslowhttptest version 1.8.2
+ - https://github.com/shekyan/slowhttptest -
+[0;34mtest type:[1;34m                        SLOW HEADERS
+[0;34mnumber of connections:[1;34m            500
+[0;34mURL:[1;34m                              http://172.20.0.2:80/
+[0;34mverb:[1;34m                             GET
+[0;34mcookie:[1;34m                           
+[0;34mContent-Length header value:[1;34m      4096
+[0;34mfollow up data max size:[1;34m          52
+[0;34minterval between follow up data:[1;34m  10 seconds
+[0;34mconnections per seconds:[1;34m          200
+[0;34mprobe connection timeout:[1;34m         3 seconds
+[0;34mtest duration:[1;34m                    60 seconds
+[0;34musing proxy:[1;34m                      no proxy 
+
+[0mSat Jun 27 19:46:01 2026:[1;32m
+slow HTTP test status on [0;32m60[1;32mth second:
+
+[1;32minitializing:[1;32m        0
+[1;32mpending:     [1;32m        0
+[1;32mconnected:   [1;32m        500
+[1;32merror:       [1;32m        0
+[1;32mclosed:      [1;32m        0
+[1;32mservice available:[1;32m   [1;32mYES[0m
+[0mSat Jun 27 19:46:02 2026:[0;36m
+Test ended on 61th second
+Exit status:[1;36m Hit test time limit
+[0mEND_EPOCH 1782589562
+packets read:   10272
+flows captured: 522
+saved matrix:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/03_slowloris.X.npy shape=(522, 56)
+saved csv:      /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/03_slowloris.X.csv
+saved idents:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/03_slowloris.ids.jsonl (522 rows)
+[score] 03_slowloris: all 522 captured, errors=0 -> /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/03_slowloris.flows.jsonl
+
+=== WINDOW: 04_ssh_brute (filter: host 172.20.0.9 and host 172.20.0.4) ===
+--- firing: fire 04_ssh_brute.sh --target 172.20.0.4 ---
+TOOL hydra -l labuser -P /attacks/passwords.txt -t 4 ssh://172.20.0.4:22
+START_EPOCH 1782589631
+Hydra v9.4 (c) 2022 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
+
+Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2026-06-27 19:47:11
+[DATA] max 4 tasks per 1 server, overall 4 tasks, 10 login tries (l:1/p:10), ~3 tries per task
+[DATA] attacking ssh://172.20.0.4:22/
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "123456" - 1 of 10 [child 0] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "password" - 2 of 10 [child 1] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "admin" - 3 of 10 [child 2] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "root" - 4 of 10 [child 3] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "toor" - 5 of 10 [child 3] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "letmein" - 6 of 10 [child 0] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "labpass" - 7 of 10 [child 1] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "qwerty" - 8 of 10 [child 2] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "changeme" - 9 of 10 [child 3] (0/0)
+[ATTEMPT] target 172.20.0.4 - login "labuser" - pass "welcome" - 10 of 10 [child 0] (0/0)
+[22][ssh] host: 172.20.0.4   login: labuser   password: labpass
+1 of 1 target successfully completed, 1 valid password found
+Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-06-27 19:47:11
+END_EPOCH 1782589631
+packets read:   125
+flows captured: 5
+saved matrix:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/04_ssh_brute.X.npy shape=(5, 56)
+saved csv:      /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/04_ssh_brute.X.csv
+saved idents:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/04_ssh_brute.ids.jsonl (5 rows)
+[score] 04_ssh_brute: all 5 captured, errors=0 -> /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/04_ssh_brute.flows.jsonl
+
+=== WINDOW: 05_web_attack (filter: host 172.20.0.9 and host 172.20.0.2) ===
+docker: Error response from daemon: Conflict. The container name "/evcap" is already in use by container "1a597b890fde21d43d688d137fcad45e7bc4235b420c5fea32124d3cd9f80690". You have to remove (or rename) that container to be able to reuse that name.
+
+Run 'docker run --help' for more information
+==========================================
+AI-IDS Attack Eval (Instrument A)  20260627_205028
+REPO=/media/thierry/TempStorage2/AI-IDS
+OUTDIR=/media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402
+INFERENCE_URL=http://127.0.0.1:8000
+==========================================
+[prereq] inference /health ...
+  raw: {"status":"ok","feature_contract":"loaded","models":{"random_forest":"loaded","xgboost":"loaded","lightgbm":"loaded","cnn_lstm":"loaded","autoencoder":"loaded"},"label_encoder":true,"ae_scaler":true,"dl_scaler":false}
+  health: ok
+[prereq] AE threshold smoke /predict ...
+  AE threshold reported: 0.3791940212249756 (expect ~0.379194)
+[prereq] attack image ...
+[prereq] fleet up (web, ssh, db) ...
+[prereq] all checks passed.
+[ips] attacker=172.20.0.10 web=172.20.0.2 ssh=172.20.0.4 client=172.20.0.6
+[bridge] br-172a4c4f4be4
+[offload] disabling tso/gso/gro on bridge + veths + container eth0 ...
+[offload] done.
+
+=== WINDOW: 00_benign_control (filter: host 172.20.0.6) ===
+[skip] 00_benign_control already scored (557 flows)
+
+=== WINDOW: 01_portscan (filter: host 172.20.0.10 and host 172.20.0.2) ===
+[skip] 01_portscan already scored (3000 flows)
+
+=== WINDOW: 02_dos_hulk (filter: host 172.20.0.10 and host 172.20.0.2) ===
+[skip] 02_dos_hulk already scored (3000 flows)
+
+=== WINDOW: 03_slowloris (filter: host 172.20.0.10 and host 172.20.0.2) ===
+[skip] 03_slowloris already scored (522 flows)
+
+=== WINDOW: 04_ssh_brute (filter: host 172.20.0.10 and host 172.20.0.4) ===
+[skip] 04_ssh_brute already scored (5 flows)
+
+=== WINDOW: 05_web_attack (filter: host 172.20.0.10 and host 172.20.0.2) ===
+--- firing: fire 05_web_attack.sh --target 172.20.0.2 ---
+TOOL dirb http://172.20.0.2:80/ + sqlmap probe
+START_EPOCH 1782589833
+
+-----------------
+DIRB v2.22    
+By The Dark Raver
+-----------------
+
+START_TIME: Sat Jun 27 19:50:33 2026
+URL_BASE: http://172.20.0.2:80/
+WORDLIST_FILES: /attacks/wordlist.txt
+OPTION: Not Recursive
+OPTION: Silent Mode
+
+-----------------
+
+GENERATED WORDS: 23
+
+---- Scanning URL: http://172.20.0.2:80/ ----
+
+-----------------
+END_TIME: Sat Jun 27 19:50:33 2026
+DOWNLOADED: 23 - FOUND: 0
+        ___
+       __H__
+ ___ ___[)]_____ ___ ___  {1.7.2#stable}
+|_ -| . ["]     | .'| . |
+|___|_  [']_|_|_|__,|  _|
+      |_|V...       |_|   https://sqlmap.org
+
+[!] legal disclaimer: Usage of sqlmap for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
+
+[*] starting @ 19:50:33 /2026-06-27/
+
+[1/1] URL:
+GET http://172.20.0.2:80/?id=1
+do you want to test this URL? [Y/n/q]
+> Y
+[19:50:33] [INFO] testing URL 'http://172.20.0.2:80/?id=1'
+[19:50:33] [INFO] using '/root/.local/share/sqlmap/output/results-06272026_0750pm.csv' as the CSV results file in multiple targets mode
+[19:50:33] [INFO] testing connection to the target URL
+[19:50:33] [INFO] checking if the target is protected by some kind of WAF/IPS
+[19:50:33] [INFO] testing if the target URL content is stable
+[19:50:34] [INFO] target URL content is stable
+[19:50:34] [INFO] testing if GET parameter 'id' is dynamic
+[19:50:34] [WARNING] GET parameter 'id' does not appear to be dynamic
+[19:50:34] [WARNING] heuristic (basic) test shows that GET parameter 'id' might not be injectable
+[19:50:34] [INFO] testing for SQL injection on GET parameter 'id'
+[19:50:34] [INFO] testing 'AND boolean-based blind - WHERE or HAVING clause'
+[19:50:34] [INFO] testing 'Boolean-based blind - Parameter replace (original value)'
+[19:50:34] [INFO] testing 'MySQL >= 5.1 AND error-based - WHERE, HAVING, ORDER BY or GROUP BY clause (EXTRACTVALUE)'
+[19:50:34] [INFO] testing 'PostgreSQL AND error-based - WHERE or HAVING clause'
+[19:50:34] [INFO] testing 'Microsoft SQL Server/Sybase AND error-based - WHERE or HAVING clause (IN)'
+[19:50:34] [INFO] testing 'Oracle AND error-based - WHERE or HAVING clause (XMLType)'
+[19:50:34] [INFO] testing 'Generic inline queries'
+[19:50:34] [INFO] testing 'PostgreSQL > 8.1 stacked queries (comment)'
+[19:50:34] [INFO] testing 'Microsoft SQL Server/Sybase stacked queries (comment)'
+[19:50:34] [INFO] testing 'Oracle stacked queries (DBMS_PIPE.RECEIVE_MESSAGE - comment)'
+[19:50:34] [INFO] testing 'MySQL >= 5.0.12 AND time-based blind (query SLEEP)'
+[19:50:34] [INFO] testing 'PostgreSQL > 8.1 AND time-based blind'
+[19:50:34] [INFO] testing 'Microsoft SQL Server/Sybase time-based blind (IF)'
+[19:50:34] [INFO] testing 'Oracle AND time-based blind'
+it is recommended to perform only basic UNION tests if there is not at least one other (potential) technique found. Do you want to reduce the number of requests? [Y/n] Y
+[19:50:34] [INFO] testing 'Generic UNION query (NULL) - 1 to 10 columns'
+[19:50:34] [WARNING] GET parameter 'id' does not seem to be injectable
+[19:50:34] [ERROR] all tested parameters do not appear to be injectable. Try to increase values for '--level'/'--risk' options if you wish to perform more tests. If you suspect that there is some kind of protection mechanism involved (e.g. WAF) maybe you could try to use option '--tamper' (e.g. '--tamper=space2comment') and/or switch '--random-agent', skipping to the next target
+[19:50:34] [INFO] you can find results of scanning in multiple targets mode inside the CSV file '/root/.local/share/sqlmap/output/results-06272026_0750pm.csv'
+[19:50:34] [WARNING] your sqlmap version is outdated
+
+[*] ending @ 19:50:34 /2026-06-27/
+
+END_EPOCH 1782589834
+packets read:   999
+flows captured: 76
+saved matrix:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/05_web_attack.X.npy shape=(76, 56)
+saved csv:      /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/05_web_attack.X.csv
+saved idents:   /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/05_web_attack.ids.jsonl (76 rows)
+[score] 05_web_attack: all 76 captured, errors=0 -> /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/05_web_attack.flows.jsonl
+[tabulate] 6 rows -> /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/summary.csv, /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/summary.md
+[manifest] wrote /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402/manifest.json
+
+=== VALIDATION ===
+  00_benign_control.flows.jsonl: 557 flows
+  01_portscan.flows.jsonl: 3000 flows
+  02_dos_hulk.flows.jsonl: 3000 flows
+  03_slowloris.flows.jsonl: 522 flows
+  04_ssh_brute.flows.jsonl: 5 flows
+  05_web_attack.flows.jsonl: 76 flows
+  total flows scored: 7160
+
+Results in: /media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402
+Back up now:  cp -r '/media/thierry/TempStorage2/AI-IDS/traffic-harness/eval/results/20260627_203402' ~/aiids-eval-backup/   # drive remounts, pcaps not regenerable
+VALIDATION: PASS

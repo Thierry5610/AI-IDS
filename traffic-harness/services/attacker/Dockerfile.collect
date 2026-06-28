@@ -1,0 +1,49 @@
+# Collection toolchain, layered ON TOP of the attack image (ids-harness-attacker:1).
+# Additive only: the eval attacker image and the benign client image are untouched, so
+# the AE benign baseline and the Instrument A eval stay reproducible. Built as a separate
+# tag ids-harness-collect:1.
+#
+# Adds the extra tools the Collect spec needs for >=3 tools per attack class plus the
+# held-out tools:
+#   portscan   : nmap (base) + python connect-scanner (pyscan.py) + rustscan (holdout)
+#   dos        : goldeneye (base) + hulk.py + ab (apache2-utils) ; slowhttptest (base) = holdout
+#   bruteforce : hydra (base) + medusa (+ patator fallback) ; ncrack = holdout
+#
+# Gate gracefully: every optional tool install is best-effort (|| true). A tool that will
+# not install is simply absent; the driver detects presence at runtime and records the skip
+# in the manifest. The build never fails on one missing tool.
+#
+# Build context must be traffic-harness/ so collect/ is reachable:
+#   docker build -f services/attacker/Dockerfile.collect -t ids-harness-collect:1 .
+# No em dashes anywhere.
+FROM ids-harness-attacker:1
+
+# apt-available tools: ab (apache2-utils), medusa, ncrack, patator (fallback brute), curl/ca
+# for the rustscan download. Best-effort: a failed apt of one package must not fail the build.
+RUN apt-get update || true \
+ && apt-get install -y --no-install-recommends \
+      apache2-utils medusa ncrack patator curl ca-certificates unzip \
+    || true \
+ && rm -rf /var/lib/apt/lists/*
+
+# rustscan has no apt package. The 2.4.x releases ship a double-zipped x86_64 tarball
+# (x86_64-linux-rustscan.tar.gz.zip). Fetch, unzip, untar and drop the static binary on PATH.
+# Best-effort: if the download or extraction fails (offline build, moved asset), rustscan is
+# simply absent and the driver re-picks the portscan holdout from the tools present.
+ARG RUSTSCAN_VER=2.4.1
+RUN set -eux; \
+    url="https://github.com/bee-san/RustScan/releases/download/${RUSTSCAN_VER}/x86_64-linux-rustscan.tar.gz.zip"; \
+    ( curl -fsSL -o /tmp/rs.zip "$url" \
+      && unzip -o /tmp/rs.zip -d /tmp/rs \
+      && tar -xzf "$(find /tmp/rs -name '*.tar.gz' | head -1)" -C /tmp/rs \
+      && install -m 0755 "$(find /tmp/rs -name 'rustscan' -type f | head -1)" /usr/local/bin/rustscan \
+      && rm -rf /tmp/rs /tmp/rs.zip ) || echo "WARN: rustscan install skipped ($url)"; \
+    rustscan --version || echo "WARN: rustscan not available"
+
+# Bake the new collection tool scripts + wordlists into the image alongside /attacks.
+COPY collect/tools /collect/tools
+COPY collect/wordlists /collect/wordlists
+RUN chmod +x /collect/tools/*.sh /collect/tools/*.py 2>/dev/null || true
+
+WORKDIR /attacks
+CMD ["sleep", "infinity"]

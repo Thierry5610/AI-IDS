@@ -4,7 +4,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173,
+    // Honour an injected PORT (preview/CI); default to 5173 for normal dev.
+    port: Number(process.env.PORT) || 5173,
     proxy: {
       // /api/*  → inference service (strip /api prefix — service has no such prefix)
       '/api': {

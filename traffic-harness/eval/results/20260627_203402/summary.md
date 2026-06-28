@@ -1,0 +1,8 @@
+| attack | flows | RF fire% | XGB fire% | LGBM fire% | CNN-LSTM fire% | ensemble is_attack% | mean consensus | AE anomalous% | mean AE error | tool/flags |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 00_benign_control | 557 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | 35.9 | 1.0805 |  |
+| 01_portscan | 3000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | 100.0 | 1.1558 | nmap -sT -p- -T4 172.20.0.2 |
+| 02_dos_hulk | 3000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | 4.4 | 0.0883 | goldeneye http://172.20.0.2:80/ duration=30s workers=50 |
+| 03_slowloris | 522 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | 95.8 | 9631966833.8603 | slowhttptest -c 500 -H -u http://172.20.0.2:80/ -l 60 |
+| 04_ssh_brute | 5 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | 0.0 | 0.0177 | hydra -l labuser -P /attacks/passwords.txt -t 4 ssh://172.20.0.4:22 |
+| 05_web_attack | 76 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | 0.0 | 0.0352 | dirb http://172.20.0.2:80/ + sqlmap probe |

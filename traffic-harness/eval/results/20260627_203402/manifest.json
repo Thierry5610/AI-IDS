@@ -1,0 +1,79 @@
+{
+  "stamp": "20260627_205028",
+  "attacker_ip": "172.20.0.10",
+  "targets": {
+    "web": "172.20.0.2",
+    "ssh": "172.20.0.4"
+  },
+  "ae_threshold": "0.3791940212249756",
+  "sensor_commit": "c02552c",
+  "attacks": [
+    {
+      "attack": "05_web_attack",
+      "start": 1782589833,
+      "end": 1782589834
+    }
+  ],
+  "tools": {
+    "01_portscan": "nmap -sT -p- -T4 172.20.0.2",
+    "02_dos_hulk": "goldeneye http://172.20.0.2:80/ duration=30s workers=50",
+    "03_slowloris": "slowhttptest -c 500 -H -u http://172.20.0.2:80/ -l 60",
+    "04_ssh_brute": "hydra -l labuser -P /attacks/passwords.txt -t 4 ssh://172.20.0.4:22",
+    "05_web_attack": "dirb http://172.20.0.2:80/ + sqlmap probe"
+  },
+  "windows": {
+    "02_dos_hulk": {
+      "attack": "02_dos_hulk",
+      "captured": 12466,
+      "scored": 3000,
+      "errors": 0,
+      "sampled": true,
+      "max_flows": 3000
+    },
+    "03_slowloris": {
+      "attack": "03_slowloris",
+      "captured": 522,
+      "scored": 522,
+      "errors": 0,
+      "sampled": false,
+      "max_flows": 3000
+    },
+    "04_ssh_brute": {
+      "attack": "04_ssh_brute",
+      "captured": 5,
+      "scored": 5,
+      "errors": 0,
+      "sampled": false,
+      "max_flows": 3000
+    },
+    "05_web_attack": {
+      "attack": "05_web_attack",
+      "captured": 76,
+      "scored": 76,
+      "errors": 0,
+      "sampled": false,
+      "max_flows": 3000
+    },
+    "00_benign_control": {
+      "attack": "00_benign_control",
+      "captured": 557,
+      "scored": 557,
+      "errors": 0,
+      "sampled": false,
+      "max_flows": 3000
+    },
+    "01_portscan": {
+      "attack": "01_portscan",
+      "captured": 65529,
+      "scored": 3000,
+      "errors": 0,
+      "sampled": true,
+      "max_flows": 3000
+    }
+  },
+  "images": {
+    "ids-harness-web:1": "ids-harness-web:1",
+    "ids-harness-ssh:1": "ids-harness-ssh:1",
+    "ids-harness-attacker:1": "ids-harness-attacker:1"
+  }
+}
